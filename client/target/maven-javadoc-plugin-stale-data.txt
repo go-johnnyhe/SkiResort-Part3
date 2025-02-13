@@ -1,0 +1,87 @@
+/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home/bin/javadoc
+@options
+@packages
+-classpath
+'/Users/hemingao/.m2/repository/javax/servlet/javax.servlet-api/4.0.1/javax.servlet-api-4.0.1.jar:/Users/hemingao/.m2/repository/io/swagger/core/v3/swagger-annotations/2.0.0/swagger-annotations-2.0.0.jar:/Users/hemingao/.m2/repository/com/squareup/okhttp/okhttp/2.7.5/okhttp-2.7.5.jar:/Users/hemingao/.m2/repository/com/squareup/okio/okio/1.6.0/okio-1.6.0.jar:/Users/hemingao/.m2/repository/com/squareup/okhttp/logging-interceptor/2.7.5/logging-interceptor-2.7.5.jar:/Users/hemingao/.m2/repository/com/google/code/gson/gson/2.8.1/gson-2.8.1.jar:/Users/hemingao/.m2/repository/io/gsonfire/gson-fire/1.8.3/gson-fire-1.8.3.jar:/Users/hemingao/.m2/repository/org/threeten/threetenbp/1.3.5/threetenbp-1.3.5.jar:/Users/hemingao/.m2/repository/javax/xml/bind/jaxb-api/2.2.11/jaxb-api-2.2.11.jar:/Users/hemingao/.m2/repository/com/sun/xml/bind/jaxb-core/2.2.11/jaxb-core-2.2.11.jar:/Users/hemingao/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11.jar:/Users/hemingao/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar:/Users/hemingao/.m2/repository/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'/Users/hemingao/Downloads/java-client-generated/src/main/java:/Users/hemingao/Downloads/java-client-generated/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2025. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/hemingao/Downloads/java-client-generated/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'swagger-java-client 1.0.0 API'
+-use
+-version
+-windowtitle
+'swagger-java-client 1.0.0 API'
+io.swagger.client
+io.swagger.client
+io.swagger.client
+io.swagger.client
+io.swagger.client
+io.swagger.client.auth
+io.swagger.client.auth
+io.swagger.client.auth
+io.swagger.client.auth
+io.swagger.client.auth
+io.swagger.client
+io.swagger.client
+io.swagger.client
+io.swagger.client
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.model
+io.swagger.client.api
+io.swagger.client.api
+io.swagger.client.api
+io.swagger.client
+io.swagger.client
+client
+client
+/Users/hemingao/.m2/repository/javax/servlet/javax.servlet-api/4.0.1/javax.servlet-api-4.0.1.jar = 1524208759000
+/Users/hemingao/.m2/repository/io/swagger/core/v3/swagger-annotations/2.0.0/swagger-annotations-2.0.0.jar = 1522077293000
+/Users/hemingao/.m2/repository/com/squareup/okhttp/okhttp/2.7.5/okhttp-2.7.5.jar = 1456500233000
+/Users/hemingao/.m2/repository/com/squareup/okio/okio/1.6.0/okio-1.6.0.jar = 1440547193000
+/Users/hemingao/.m2/repository/com/squareup/okhttp/logging-interceptor/2.7.5/logging-interceptor-2.7.5.jar = 1456500338000
+/Users/hemingao/.m2/repository/com/google/code/gson/gson/2.8.1/gson-2.8.1.jar = 1496194739000
+/Users/hemingao/.m2/repository/io/gsonfire/gson-fire/1.8.3/gson-fire-1.8.3.jar = 1523143052000
+/Users/hemingao/.m2/repository/org/threeten/threetenbp/1.3.5/threetenbp-1.3.5.jar = 1496838034000
+/Users/hemingao/.m2/repository/javax/xml/bind/jaxb-api/2.2.11/jaxb-api-2.2.11.jar = 1378462269000
+/Users/hemingao/.m2/repository/com/sun/xml/bind/jaxb-core/2.2.11/jaxb-core-2.2.11.jar = 1412939380000
+/Users/hemingao/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.11/jaxb-impl-2.2.11.jar = 1412939507000
+/Users/hemingao/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar = 1256322270000
+/Users/hemingao/.m2/repository/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar = 1519208663000
+/Users/hemingao/Downloads/java-client-generated/src/main/java = 1737854735763
+/Users/hemingao/Downloads/java-client-generated/target/generated-sources/annotations = 1737862843668
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/tag-search-index.js = 1737862847091
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/overview-tree.html = 1737862847074
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/module-search-index.js = 1737862847090
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/index.html = 1737862847076
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/package-search-index.js = 1737862847091
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/serialized-form.html = 1737862847013
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/index-all.html = 1737862847104
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/allpackages-index.html = 1737862847090
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/member-search-index.js = 1737862847091
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/overview-summary.html = 1737862847105
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/help-doc.html = 1737862847106
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/element-list = 1737862846999
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/search.html = 1737862847105
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/allclasses-index.html = 1737862847089
+/Users/hemingao/Downloads/java-client-generated/target/apidocs/type-search-index.js = 1737862847091
