@@ -1,0 +1,6 @@
+LiftRide.class
+SkierRecord.class
+SkierRecordsConsumer.class
+SkierServlet.class
+HealthCheckServlet.class
+RabbitMQConnectionPool.class

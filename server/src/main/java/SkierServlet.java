@@ -1,12 +1,14 @@
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import javax.servlet.annotation.WebServlet;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.MessageProperties;
+import java.util.concurrent.TimeoutException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-//package client;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,10 +16,32 @@ import java.io.PrintWriter;
 @WebServlet("/skiers/*")
 public class SkierServlet extends HttpServlet {
     private final Gson gson = new Gson();
+    private RabbitMQConnectionPool connectionPool;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        try {
+            connectionPool = new RabbitMQConnectionPool("34.217.15.111");
+        } catch (IOException | TimeoutException e) {
+            throw new ServletException("Failed to initialize RabbitMQ connection pool", e);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        if (connectionPool != null) {
+            connectionPool.close();
+        }
+        super.destroy();
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
         res.setContentType("application/json");
+        Channel channel = null;
+
+
         PrintWriter out = res.getWriter();
         try {
             String pathInfo = req.getPathInfo();
@@ -77,11 +101,36 @@ public class SkierServlet extends HttpServlet {
                 return;
             }
 
+            SkierRecord record = new SkierRecord(
+                Integer.parseInt(parts[1]),
+                parts[3],
+                parts[5],
+                Integer.parseInt(parts[7]),
+                liftRide.getTime(),
+                liftRide.getLiftID()
+            );
+
+            channel = connectionPool.getChannel();
+            String message = gson.toJson(record);
+            System.out.println("About to publish message to RabbitMQ: " + message);
+            channel.basicPublish("", connectionPool.getQueueName(), MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
+            System.out.println("Message successfully published to RabbitMQ!");
+
             res.setStatus(HttpServletResponse.SC_CREATED);
+        } catch (InterruptedException e) {
+            sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to acquire channel");
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
             e.printStackTrace();
         } finally {
+            if (channel != null) {
+                try {
+                    connectionPool.returnChannel(channel);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             out.close();
         }
     }
@@ -139,4 +188,46 @@ class LiftRide {
     public void setTime(Integer time) { this.time = time; }
     public Integer getLiftID() { return liftID; }
     public void setLiftID(Integer liftID) { this.liftID = liftID; }
+}
+
+class SkierRecord {
+    private final int resortId;
+    private final String seasonId;
+    private final String dayId;
+    private final int skierId;
+    private final int time;
+    private final int liftId;
+    public SkierRecord(int resortId, String seasonId, String dayId,
+        int skierId, int time, int liftId) {
+        this.resortId = resortId;
+        this.seasonId = seasonId;
+        this.dayId = dayId;
+        this.skierId = skierId;
+        this.time = time;
+        this.liftId = liftId;
+    }
+
+    public int getResortId() {
+        return resortId;
+    }
+
+    public String getSeasonId() {
+        return seasonId;
+    }
+
+    public String getDayId() {
+        return dayId;
+    }
+
+    public int getSkierId() {
+        return skierId;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    public int getLiftId() {
+        return liftId;
+    }
 }

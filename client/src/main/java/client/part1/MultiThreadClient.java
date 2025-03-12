@@ -12,7 +12,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Client Part 1 Results:
  * Number of successful requests: 200000
@@ -24,11 +26,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public class MultiThreadClient {
-  private static final int INITIAL_THREADS = 32;
-  private static final int CLEANUP_THREADS = 80;
-  private static final int REQUESTS_PER_THREAD = 1000;
-  private static final int TOTAL_REQUESTS = 200000;
-  static final String BASE_PATH = "http://52.13.106.210:8080/distributed-hw1";
+  //  private static final int TOTAL_REQUESTS = 200;
+//  private static final int INITIAL_THREADS = 10;  // Slight increase
+//  private static final int CLEANUP_THREADS = 10;
+//  private static final int TOTAL_REQUESTS = 20000;
+  //  private static final int INITIAL_THREADS = 25;
+//  private static final int CLEANUP_THREADS = 25;
+  private static final int INITIAL_THREADS = 32;  // Increase from 24
+  private static final int CLEANUP_THREADS = 48;  // Increase from 32
+  private static final int TOTAL_REQUESTS = 400000;
+  private static final int REQUESTS_PER_THREAD = TOTAL_REQUESTS / INITIAL_THREADS;
+  static final String BASE_PATH = "http://tomcat-skier-alb-2082807083.us-west-2.elb.amazonaws.com:8080/distributed-hw1";
   private static final BlockingQueue<LiftRideEvent> eventQueue = new LinkedBlockingQueue<>(10000);
   static final AtomicInteger successfulRequests = new AtomicInteger(0);
   static final AtomicInteger failedRequests = new AtomicInteger(0);
@@ -53,15 +61,19 @@ public class MultiThreadClient {
 
       int remainingRequests = TOTAL_REQUESTS - (INITIAL_THREADS * REQUESTS_PER_THREAD);
       if (remainingRequests > 0) {
-        ExecutorService cleanupPhase = Executors.newFixedThreadPool(CLEANUP_THREADS);
-        int requestsPerThread = (int) Math.ceil((double) remainingRequests / CLEANUP_THREADS);
+        // Calculate how many threads we'll actually need
+        int requestsPerCleanupThread = (int) Math.ceil((double) remainingRequests / CLEANUP_THREADS);
+        int actualCleanupThreads = Math.min(CLEANUP_THREADS, remainingRequests);
 
-        CountDownLatch cleanupLatch = new CountDownLatch(CLEANUP_THREADS);
-        for (int i = 0; i < CLEANUP_THREADS; i++) {
-          int threadRequests = Math.min(requestsPerThread, remainingRequests);
+        ExecutorService cleanupPhase = Executors.newFixedThreadPool(actualCleanupThreads);
+        CountDownLatch cleanupLatch = new CountDownLatch(actualCleanupThreads);
+
+        int tempRemainingRequests = remainingRequests;
+        for (int i = 0; i < actualCleanupThreads; i++) {
+          int threadRequests = Math.min(requestsPerCleanupThread, tempRemainingRequests);
           if (threadRequests > 0) {
             cleanupPhase.submit(new RequestSender(threadRequests, eventQueue, cleanupLatch, metricsCollector));
-            remainingRequests -= threadRequests;
+            tempRemainingRequests -= threadRequests;
           }
         }
 
@@ -70,8 +82,8 @@ public class MultiThreadClient {
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
+      System.out.println("Main thread interrupted: " + e.getMessage());
     }
-
 
     System.out.println("All threads finished processing.");
 
@@ -82,7 +94,7 @@ public class MultiThreadClient {
     System.out.println("\n=== Client Configuration ===");
     System.out.println("Initial Phase Threads: " + INITIAL_THREADS);
     System.out.println("Cleanup Phase Threads: " + CLEANUP_THREADS);
-    System.out.println("Total Threads Used: " + (INITIAL_THREADS + CLEANUP_THREADS));
+    System.out.println("Total Requests: " + TOTAL_REQUESTS);
 
     System.out.println("\n=== Part 1 Results ===");
     System.out.println("Number of successful requests: " + successfulRequests.get());
@@ -167,7 +179,6 @@ class RequestSender implements Runnable {
     while (retries < 5) {
       long startTime = System.currentTimeMillis();
       try {
-
         skiersApi.writeNewLiftRide(
             liftRideEvent.getLiftRide(),
             liftRideEvent.getResortId(),
@@ -186,7 +197,10 @@ class RequestSender implements Runnable {
         return true;
       } catch (ApiException e) {
         long endTime = System.currentTimeMillis();
+        System.out.println("Full error details: " + e.getMessage());
+        System.out.println("Response body: " + e.getResponseBody());
         retries++;
+        System.out.println("Request failed with code: " + e.getCode() + ", attempt: " + retries);
         if (retries == 5) {
           metricsCollector.addRecord(new RequestRecord(
               startTime,
@@ -213,6 +227,8 @@ class RequestSender implements Runnable {
     ApiClient apiClient = new ApiClient();
     apiClient.setBasePath(MultiThreadClient.BASE_PATH);
     apiClient.addDefaultHeader("Content-Type", "application/json");
+    apiClient.getHttpClient().setConnectTimeout(5000, TimeUnit.MILLISECONDS);
+    apiClient.getHttpClient().setReadTimeout(10000, TimeUnit.MILLISECONDS);
     SkiersApi skiersApi = new SkiersApi(apiClient);
     try {
       for (int i = 0; i < requests; i++) {
