@@ -1,62 +1,99 @@
-# CS6650 Assignment 1 - Client Implementation
+# SkiResort-Part2
+
+# Distributed Ski Resort System
+
+A high-performance distributed system for processing ski lift ride data, built for CS6650 Assignment 2.
 
 ## Overview
 
-This client implements a multi-threaded solution for sending 200,000 POST requests to a ski resort RFID system, following the requirements of CS6650 Assignment 1. The client includes metrics collection and performance statistics.
+This system processes ski lift ride data through a distributed architecture designed for scalability and fault tolerance:
 
-## Setup Instructions
+- **Java Servlet API**: Validates requests and publishes to message queue
+- **RabbitMQ Message Broker**: Buffers messages between components
+- **Multi-threaded Consumer**: Processes messages and maintains skier records
 
-1. Clone this repository
-2. Open the project in IntelliJ IDEA
-3. Ensure you have Java 11+ installed
-4. The main method is in **MultiThreadClient** class - simply run this file in IntelliJ
+## Architecture
 
-## Configuration
+```
+                              ┌───────────────┐
+                              │  AWS Load     │
+                              │  Balancer     │
+                              └───────┬───────┘
+                                      │
+                 ┌────────────────────┴─────────────────────┐
+                 │                                          │
+        ┌────────▼─────────┐                     ┌──────────▼────────┐
+        │   Tomcat Server  │                     │   Tomcat Server   │
+        │  (Servlet API)   │                     │   (Servlet API)   │
+        └────────┬─────────┘                     └──────────┬────────┘
+                 │                                          │
+                 └─────────────────┬──────────────────────┘
+                                   │
+                       ┌───────────▼───────────┐
+                       │  RabbitMQ Broker      │
+                       │ (Message Queue)       │
+                       └───────────┬───────────┘
+                                   │
+                       ┌───────────▼───────────┐
+                       │  Consumer Application  │
+                       │  (40 Worker Threads)   │
+                       └───────────────────────┘
+```
 
-- **Server URL**: Located in the **MultiThreadClient** class. Modify the `BASE_PATH` constant at the top of the file
-- **Thread Configuration**:
-  - Initial phase: 32 threads (as per assignment requirements)
-  - Cleanup phase: 80 threads
-  - Each initial thread handles 1000 requests
-- **Queue Size**: The blocking queue for lift ride events has a capacity of 10000
+## Key Components
 
-## Dependencies
+### Server (SkierServlet)
+- RESTful API following the required URL pattern
+- Thorough request validation
+- Connection pooling with RabbitMQ (50 channels)
+- Persistent message publishing
 
-- Swagger Client API
-- Java 11+
-- Maven
+### Message Queue
+- Durable queue configuration
+- Message persistence for reliability
+- Deployed on dedicated EC2 instance
 
-## Implementation Notes
+### Consumer
+- 40 concurrent worker threads
+- Prefetch count of 20 for optimal throughput
+- Thread-safe data structures (ConcurrentHashMap, CopyOnWriteArrayList)
+- Explicit message acknowledgment
 
-- Uses a dedicated thread for event generation
-- Implements retry logic (up to 5 attempts) for failed requests
-- Collects comprehensive metrics including mean, median, and p99 latencies
-- Records request data in CSV format for analysis
+## Performance Highlights
 
-### Expected output
+- **Optimized Configuration**:
+  - Client: 32 initial threads, 48 cleanup threads
+  - Connection timeouts: 5s connect, 10s read
+  - Consumer: 40 threads with prefetch count of 20
 
-```java
-All threads finished processing.
+- **Load Balanced Performance**:
+  - Throughput: ~1,260 messages/second
+  - 400,000 messages processed in 317.45 seconds
+  - Stable queue depth (no message backlog)
 
-=== Client Configuration ===
-Initial Phase Threads: 32
-Cleanup Phase Threads: 80
-Total Threads Used: 112
-=== Part 1 Results ===
-Number of successful requests: 200000
-Number of failed requests: 0
-Wall time: 91193 ms
-Throughput: 2193.15 requests/second
-=== Part 2 Statistics ===
+## Quick Start
 
-Request Latency Statistics:
+1. **Deploy RabbitMQ**:
+   ```bash
+   sudo apt-get update
+   sudo apt-get install rabbitmq-server
+   sudo rabbitmqctl add_user admin password
+   sudo rabbitmqctl set_user_tags admin administrator
+   ```
 
-Mean response time: 29.62 ms
+2. **Deploy Servlet**:
+   - Build WAR file with Maven
+   - Deploy to Tomcat on EC2 instances
+   - Configure behind AWS ALB
 
-Median response time: 27 ms
-p99 response time: 80 ms
+3. **Run Consumer**:
+   ```bash
+   java -jar consumer.jar
+   ```
 
-Min response time: 13 ms
+## Monitoring
 
-Max response time: 538 ms
+Access the RabbitMQ Management Console:
+```
+http://[rabbitmq-ip]:15672/
 ```
