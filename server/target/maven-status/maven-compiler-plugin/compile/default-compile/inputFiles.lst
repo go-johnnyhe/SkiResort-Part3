@@ -1,4 +1,5 @@
-/Users/hemingao/Downloads/distributed-hw2-workspace/SkiResort-Part2/server/src/main/java/SkierServlet.java
-/Users/hemingao/Downloads/distributed-hw2-workspace/SkiResort-Part2/server/src/main/java/SkierRecordsConsumer.java
-/Users/hemingao/Downloads/distributed-hw2-workspace/SkiResort-Part2/server/src/main/java/RabbitMQConnectionPool.java
-/Users/hemingao/Downloads/distributed-hw2-workspace/SkiResort-Part2/server/src/main/java/HealthCheckServlet.java
+/Users/hemingao/Downloads/distributed-hw3-workspace/SkiResort-Part3/server/src/main/java/RedisDAO.java
+/Users/hemingao/Downloads/distributed-hw3-workspace/SkiResort-Part3/server/src/main/java/RabbitMQConnectionPool.java
+/Users/hemingao/Downloads/distributed-hw3-workspace/SkiResort-Part3/server/src/main/java/HealthCheckServlet.java
+/Users/hemingao/Downloads/distributed-hw3-workspace/SkiResort-Part3/server/src/main/java/SkierRecordsConsumer.java
+/Users/hemingao/Downloads/distributed-hw3-workspace/SkiResort-Part3/server/src/main/java/SkierServlet.java

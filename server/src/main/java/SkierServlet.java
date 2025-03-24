@@ -22,7 +22,7 @@ public class SkierServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         try {
-            connectionPool = new RabbitMQConnectionPool("34.217.15.111");
+            connectionPool = new RabbitMQConnectionPool("44.226.51.114");
         } catch (IOException | TimeoutException e) {
             throw new ServletException("Failed to initialize RabbitMQ connection pool", e);
         }

@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public class MultiThreadClient {
-  //  private static final int TOTAL_REQUESTS = 200;
+//  private static final int TOTAL_REQUESTS = 200;
 //  private static final int INITIAL_THREADS = 10;  // Slight increase
 //  private static final int CLEANUP_THREADS = 10;
 //  private static final int TOTAL_REQUESTS = 20000;
@@ -36,6 +36,7 @@ public class MultiThreadClient {
   private static final int CLEANUP_THREADS = 48;  // Increase from 32
   private static final int TOTAL_REQUESTS = 400000;
   private static final int REQUESTS_PER_THREAD = TOTAL_REQUESTS / INITIAL_THREADS;
+//  static final String BASE_PATH = "http://35.160.173.193:8080/distributed-hw1";
   static final String BASE_PATH = "http://tomcat-skier-alb-2082807083.us-west-2.elb.amazonaws.com:8080/distributed-hw1";
   private static final BlockingQueue<LiftRideEvent> eventQueue = new LinkedBlockingQueue<>(10000);
   static final AtomicInteger successfulRequests = new AtomicInteger(0);
@@ -162,6 +163,9 @@ class EventGenerator implements Runnable {
 }
 
 class RequestSender implements Runnable {
+  private static final AtomicInteger CONCURRENT_REQUESTS = new AtomicInteger(0);
+  private static final int MAX_CONCURRENT_REQUESTS = 1000;
+
   private final int requests;
   private final BlockingQueue<LiftRideEvent> queue;
   private final CountDownLatch latch;
@@ -175,51 +179,65 @@ class RequestSender implements Runnable {
   }
 
   public boolean sendRequests(SkiersApi skiersApi, LiftRideEvent liftRideEvent) {
+    int currentConcurrent = CONCURRENT_REQUESTS.incrementAndGet();
     int retries = 0;
-    while (retries < 5) {
-      long startTime = System.currentTimeMillis();
-      try {
-        skiersApi.writeNewLiftRide(
-            liftRideEvent.getLiftRide(),
-            liftRideEvent.getResortId(),
-            "2025",
-            "1",
-            liftRideEvent.getSkierId()
-        );
-        long endTime = System.currentTimeMillis();
-        metricsCollector.addRecord(new RequestRecord(
-            startTime,
-            "POST",
-            endTime - startTime,
-            201
-        ));
 
-        return true;
-      } catch (ApiException e) {
-        long endTime = System.currentTimeMillis();
-        System.out.println("Full error details: " + e.getMessage());
-        System.out.println("Response body: " + e.getResponseBody());
-        retries++;
-        System.out.println("Request failed with code: " + e.getCode() + ", attempt: " + retries);
-        if (retries == 5) {
+    try {
+      // Implement backpressure if too many concurrent requests
+      if (currentConcurrent > MAX_CONCURRENT_REQUESTS) {
+        long waitTime = Math.min(100 * (currentConcurrent / MAX_CONCURRENT_REQUESTS), 2000);
+        Thread.sleep(waitTime);
+      }
+
+      while (retries < 5) {
+        long startTime = System.currentTimeMillis();
+        try {
+          skiersApi.writeNewLiftRide(
+              liftRideEvent.getLiftRide(),
+              liftRideEvent.getResortId(),
+              "2025",
+              "1",
+              liftRideEvent.getSkierId()
+          );
+          long endTime = System.currentTimeMillis();
           metricsCollector.addRecord(new RequestRecord(
               startTime,
               "POST",
               endTime - startTime,
-              e.getCode()
+              201
           ));
-        }
-        if (retries < 5) {
+
+          return true;
+        } catch (ApiException e) {
+          long endTime = System.currentTimeMillis();
+          System.out.println("Request failed with code: " + e.getCode() + ", attempt: " + (retries + 1));
+
+          if (retries == 4) { // Last attempt
+            metricsCollector.addRecord(new RequestRecord(
+                startTime,
+                "POST",
+                endTime - startTime,
+                e.getCode()
+            ));
+            return false;
+          }
+
+          retries++;
           try {
-            Thread.sleep(Math.min(100 * (retries + 1), 700)); // exponential backoff
-          } catch (InterruptedException e1) {
+            Thread.sleep(Math.min(100 * retries, 1000)); // exponential backoff
+          } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             return false;
           }
         }
       }
+      return false; // This should never be reached if retries < 5
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    } finally {
+      CONCURRENT_REQUESTS.decrementAndGet();
     }
-    return false;
   }
 
   @Override

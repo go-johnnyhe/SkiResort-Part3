@@ -17,6 +17,9 @@ public class RabbitMQConnectionPool {
     factory.setHost(host);
     factory.setUsername("admin");
     factory.setPassword("password");
+    factory.setRequestedHeartbeat(30);
+    factory.setConnectionTimeout(30000);
+    factory.setNetworkRecoveryInterval(5000);
 
     connection = factory.newConnection();
     channelPool = new LinkedBlockingQueue<>(POOL_SIZE);
