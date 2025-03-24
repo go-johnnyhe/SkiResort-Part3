@@ -1,8 +1,8 @@
-# SkiResort-Part2
+# SkiResort-Part3 (refer to pdf for full documentation)
 
 # Distributed Ski Resort System
 
-A high-performance distributed system for processing ski lift ride data, built for CS6650 Assignment 2.
+A high-performance distributed system for processing ski lift ride data, built for CS6650 Assignment 3.
 
 ## Overview
 
@@ -11,34 +11,6 @@ This system processes ski lift ride data through a distributed architecture desi
 - **Java Servlet API**: Validates requests and publishes to message queue
 - **RabbitMQ Message Broker**: Buffers messages between components
 - **Multi-threaded Consumer**: Processes messages and maintains skier records
-
-## Architecture
-
-```
-                              ┌───────────────┐
-                              │  AWS Load     │
-                              │  Balancer     │
-                              └───────┬───────┘
-                                      │
-                 ┌────────────────────┴─────────────────────┐
-                 │                                          │
-        ┌────────▼─────────┐                     ┌──────────▼────────┐
-        │   Tomcat Server  │                     │   Tomcat Server   │
-        │  (Servlet API)   │                     │   (Servlet API)   │
-        └────────┬─────────┘                     └──────────┬────────┘
-                 │                                          │
-                 └─────────────────┬──────────────────────┘
-                                   │
-                       ┌───────────▼───────────┐
-                       │  RabbitMQ Broker      │
-                       │ (Message Queue)       │
-                       └───────────┬───────────┘
-                                   │
-                       ┌───────────▼───────────┐
-                       │  Consumer Application  │
-                       │  (40 Worker Threads)   │
-                       └───────────────────────┘
-```
 
 ## Key Components
 
