@@ -1,8 +1,8 @@
-# SkiResort-Part3 (refer to pdf for full documentation)
+# SkiTrack: Ski Resort RFID Data Processing System
 
 # Distributed Ski Resort System
 
-A high-performance distributed system for processing ski lift ride data, built for CS6650 Assignment 3.
+A high-performance distributed system for processing ski lift ride data
 
 ## Overview
 
